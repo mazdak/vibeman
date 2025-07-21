@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+    <channel>
+        <title>Vibeman Updates</title>
+        <description>Updates for Vibeman - Development Workflow Manager</description>
+        <language>en</language>
+        <link>https://github.com/mazdak/vibeman</link>
+        
+        <!-- Current version entry - update this when releasing new versions -->
+        <item>
+            <title>Version 1.0.0</title>
+            <description><![CDATA[
+                <h3>Vibeman 1.0.0 - Initial Release</h3>
+                <ul>
+                    <li>Menu bar application for development workflow management</li>
+                    <li>Web-based UI for managing worktrees and services</li>
+                    <li>Start at Login support (macOS 13+)</li>
+                    <li>Configurable server ports</li>
+                    <li>Auto-update support via Sparkle</li>
+                </ul>
+            ]]></description>
+            <pubDate>Mon, 22 Jul 2024 12:00:00 +0000</pubDate>
+            <sparkle:version>1.0.0</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/mazdak/vibeman/releases/download/v1.0.0/Vibeman.app.zip"
+                length="5242880"
+                type="application/zip"
+                sparkle:edSignature="placeholder-signature"/>
+        </item>
+        
+        <!-- Example future version - uncomment and modify when releasing updates -->
+        <!--
+        <item>
+            <title>Version 1.0.1</title>
+            <description><![CDATA[
+                <h3>What's New in 1.0.1:</h3>
+                <ul>
+                    <li>Bug fixes and improvements</li>
+                    <li>Enhanced stability</li>
+                </ul>
+            ]]></description>
+            <pubDate>Mon, 29 Jul 2024 12:00:00 +0000</pubDate>
+            <sparkle:version>1.0.1</sparkle:version>
+            <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <enclosure 
+                url="https://github.com/mazdak/vibeman/releases/download/v1.0.1/Vibeman.app.zip"
+                length="5242880"
+                type="application/zip"
+                sparkle:edSignature="signature-here"/>
+        </item>
+        -->
+    </channel>
+</rss>

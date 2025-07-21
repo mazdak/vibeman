@@ -1,0 +1,16 @@
+# Vibeman Repository Configuration
+
+[repository]
+name = "vibeman"
+description = "vibeman repository"
+
+[repository.container]
+# TODO: Add your docker-compose configuration
+# compose_file = "./docker-compose.yaml"
+# compose_services = ["dev"]
+
+[repository.worktrees]
+directory = "../vibeman-worktrees"
+
+[repository.runtime]
+type = "docker"

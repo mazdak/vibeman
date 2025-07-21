@@ -1,0 +1,67 @@
+# Example docker-compose.yaml that vibeman can parse and use
+# This demonstrates the subset of features supported by both Docker and Apple Container
+
+version: '3.8'
+
+services:
+  # Development container - main workspace
+  dev:
+    image: ubuntu:22.04
+    container_name: vibeman-dev
+    command: ["sleep", "infinity"]
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ~/.ssh:/root/.ssh:ro
+    environment:
+      - ENVIRONMENT=development
+      - TERM=xterm-256color
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8g
+    depends_on:
+      - postgres
+      - redis
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15
+    container_name: vibeman-postgres
+    environment:
+      POSTGRES_USER: vibeman
+      POSTGRES_PASSWORD: vibeman123
+      POSTGRES_DB: vibeman_dev
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2g
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: vibeman-redis
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1g
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

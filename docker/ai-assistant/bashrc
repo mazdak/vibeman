@@ -1,0 +1,215 @@
+# Vibeman AI Assistant Shell Configuration (Bash fallback)
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# History configuration
+HISTCONTROL=ignoreboth
+HISTSIZE=10000
+HISTFILESIZE=20000
+shopt -s histappend
+
+# Update window size after each command
+shopt -s checkwinsize
+
+# Enable programmable completion
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# Enable color support
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+fi
+
+# Color definitions
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[0;37m'
+RESET='\033[0m'
+
+# Aliases - Core
+alias ls='ls --color=auto'
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# Aliases - Navigation
+alias ws='cd /workspace'
+alias logs='cd /logs'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Aliases - Git
+alias g='git'
+alias gs='git status'
+alias gd='git diff'
+alias gc='git commit'
+alias gco='git checkout'
+alias gb='git branch'
+alias gl='git log --oneline --graph --decorate'
+alias ga='git add'
+alias gp='git pull'
+alias gpu='git push'
+
+# Aliases - Development
+alias py='python3'
+alias ipy='ipython3'
+alias serve='python3 -m http.server'
+alias json='python3 -m json.tool'
+
+# Aliases - Log viewing
+alias ltail='tail -f /logs/*.log'
+alias lerror='grep -i "error\|exception\|fail" /logs/*.log'
+alias lwatch='watch -n 1 "ls -la /logs/ | tail -20"'
+
+# Aliases - Docker
+alias d='docker'
+alias dc='docker-compose'
+alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+
+# Use modern tools if available
+command -v bat >/dev/null 2>&1 && alias cat='bat'
+command -v exa >/dev/null 2>&1 && alias ls='exa --group-directories-first'
+command -v rg >/dev/null 2>&1 && alias grep='rg'
+command -v fd >/dev/null 2>&1 && alias find='fd'
+
+# Functions
+
+# Search logs
+search_logs() {
+    if [ -z "$1" ]; then
+        echo "Usage: search_logs <pattern>"
+        return 1
+    fi
+    echo "🔍 Searching for '$1' in logs..."
+    if command -v rg >/dev/null 2>&1; then
+        rg "$1" /logs --color=always | less -R
+    else
+        grep -r "$1" /logs --include="*.log" --color=always | less -R
+    fi
+}
+
+# Tail all logs
+tail_all_logs() {
+    echo "📋 Tailing all container logs..."
+    find /logs -name "*.log" -type f | xargs tail -f
+}
+
+# Check service connectivity
+check_service() {
+    local service=$1
+    local port=$2
+    
+    if [ -z "$service" ] || [ -z "$port" ]; then
+        echo "Usage: check_service <service-name> <port>"
+        return 1
+    fi
+    
+    echo -n "Checking $service:$port... "
+    if nc -zv -w 2 $service $port 2>&1 | grep -q succeeded; then
+        echo "✓ Connected"
+    else
+        echo "✗ Connection failed"
+    fi
+}
+
+# Create directory and cd into it
+mkcd() {
+    mkdir -p "$1" && cd "$1"
+}
+
+# Extract archives
+extract() {
+    if [ -z "$1" ]; then
+        echo "Usage: extract <archive>"
+        return 1
+    fi
+    
+    case $1 in
+        *.tar.bz2) tar xjf $1 ;;
+        *.tar.gz) tar xzf $1 ;;
+        *.tar.xz) tar xJf $1 ;;
+        *.bz2) bunzip2 $1 ;;
+        *.rar) unrar e $1 ;;
+        *.gz) gunzip $1 ;;
+        *.tar) tar xf $1 ;;
+        *.tbz2) tar xjf $1 ;;
+        *.tgz) tar xzf $1 ;;
+        *.zip) unzip $1 ;;
+        *.Z) uncompress $1 ;;
+        *.7z) 7z x $1 ;;
+        *) echo "'$1' cannot be extracted" ;;
+    esac
+}
+
+# Git branch in prompt
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+# Colorful prompt with git branch
+PS1="\[${GREEN}\]vibeman@ai\[${RESET}\]:\[${BLUE}\]\w\[${RESET}\]\[${YELLOW}\]\$(parse_git_branch)\[${RESET}\]\$ "
+
+# Welcome message
+clear
+echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${RESET}"
+echo -e "${CYAN}║           Welcome to Vibeman AI Container! 🚀                ║${RESET}"
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════╣${RESET}"
+echo -e "${CYAN}║${RESET} Workspace: ${GREEN}/workspace${RESET}                                        ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET} Logs:      ${GREEN}/logs${RESET}                                             ${CYAN}║${RESET}"
+echo -e "${CYAN}║${RESET} Help:      ${YELLOW}cat ~/.claude/CLAUDE.md${RESET}                           ${CYAN}║${RESET}"
+echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${RESET}"
+echo ""
+
+# Show available tools
+echo -e "${YELLOW}Available tools:${RESET}"
+command -v rg >/dev/null 2>&1 && echo "  • ripgrep (rg) - fast search"
+command -v fd >/dev/null 2>&1 && echo "  • fd - modern find"
+command -v fzf >/dev/null 2>&1 && echo "  • fzf - fuzzy finder"
+command -v bat >/dev/null 2>&1 && echo "  • bat - better cat"
+command -v exa >/dev/null 2>&1 && echo "  • exa - better ls"
+command -v sg >/dev/null 2>&1 && echo "  • ast-grep (sg) - structural search"
+command -v jq >/dev/null 2>&1 && echo "  • jq - JSON processor"
+command -v yq >/dev/null 2>&1 && echo "  • yq - YAML processor"
+echo ""
+
+# Note about zsh
+if [ -x /bin/zsh ]; then
+    echo -e "${PURPLE}Note: Zsh is available with enhanced features. Run 'zsh' to switch.${RESET}"
+    echo ""
+fi
+
+# Show available services if set
+if [ -n "$VIBEMAN_SERVICES" ]; then
+    echo -e "${GREEN}📡 Available Services:${RESET}"
+    echo "$VIBEMAN_SERVICES" | jq -r 'to_entries[] | "  - \(.key): \(.value)"' 2>/dev/null || echo "$VIBEMAN_SERVICES"
+    echo ""
+fi
+
+# Set up cd to workspace on start if not already there
+if [ "$PWD" = "/home/vibeman" ]; then
+    cd /workspace 2>/dev/null || true
+fi
+
+# Export functions
+export -f search_logs
+export -f tail_all_logs
+export -f check_service
+export -f mkcd
+export -f extract

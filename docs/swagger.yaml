@@ -1,0 +1,1122 @@
+definitions:
+  config.StorageConfig:
+    properties:
+      repositories_path:
+        description: Default repos location
+        example: ~/vibeman/repos
+        type: string
+      worktrees_path:
+        description: Default worktree location
+        example: ~/vibeman/worktrees
+        type: string
+    type: object
+  db.Repository:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        description: Local filesystem path
+        type: string
+      updated_at:
+        type: string
+    type: object
+  db.Worktree:
+    properties:
+      branch:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      path:
+        description: Filesystem path to worktree
+        type: string
+      repository_id:
+        type: string
+      status:
+        $ref: '#/definitions/db.WorktreeStatus'
+      updated_at:
+        type: string
+    type: object
+  db.WorktreeStatus:
+    enum:
+    - stopped
+    - starting
+    - running
+    - stopping
+    - error
+    type: string
+    x-enum-varnames:
+    - StatusStopped
+    - StatusStarting
+    - StatusRunning
+    - StatusStopping
+    - StatusError
+  server.AddRepositoryRequest:
+    properties:
+      description:
+        example: My awesome application
+        type: string
+      name:
+        example: myapp
+        type: string
+      path:
+        example: /home/user/projects/myapp
+        type: string
+    required:
+    - name
+    - path
+    type: object
+  server.ConfigResponse:
+    properties:
+      container:
+        $ref: '#/definitions/server.ContainerConfig'
+      git:
+        $ref: '#/definitions/server.GitConfig'
+      storage:
+        $ref: '#/definitions/config.StorageConfig'
+    type: object
+  server.ContainerActionRequest:
+    properties:
+      action:
+        enum:
+        - start
+        - stop
+        - restart
+        example: start
+        type: string
+    required:
+    - action
+    type: object
+  server.ContainerConfig:
+    properties:
+      auto_start:
+        example: true
+        type: boolean
+      default_runtime:
+        example: docker
+        type: string
+    type: object
+  server.ContainerLogsResponse:
+    properties:
+      logs:
+        items:
+          type: string
+        type: array
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  server.ContainerResponse:
+    properties:
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      id:
+        example: abc123
+        type: string
+      image:
+        example: node:18-alpine
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        example: vibeman-myapp-dev
+        type: string
+      ports:
+        example:
+        - '["8080:3000"]'
+        items:
+          type: string
+        type: array
+      repository:
+        example: myapp
+        type: string
+      state:
+        example: Up 2 hours
+        type: string
+      status:
+        example: running
+        type: string
+      worktree:
+        example: feature-auth
+        type: string
+    type: object
+  server.ContainersResponse:
+    properties:
+      containers:
+        items:
+          $ref: '#/definitions/server.ContainerResponse'
+        type: array
+      total:
+        example: 5
+        type: integer
+    type: object
+  server.CreateContainerRequest:
+    properties:
+      auto_start:
+        example: true
+        type: boolean
+      env:
+        additionalProperties:
+          type: string
+        example:
+          '{"NODE_ENV"': '"development"}'
+        type: object
+      image:
+        example: node:18-alpine
+        type: string
+      ports:
+        example:
+        - '["8080:3000"]'
+        items:
+          type: string
+        type: array
+      repository:
+        example: myapp
+        type: string
+      worktree:
+        example: feature-auth
+        type: string
+    required:
+    - image
+    - repository
+    type: object
+  server.CreateWorktreeRequest:
+    properties:
+      auto_start:
+        example: true
+        type: boolean
+      base_branch:
+        example: main
+        type: string
+      branch:
+        example: feature/auth
+        type: string
+      compose_file:
+        example: ./docker-compose.yaml
+        type: string
+      compose_services:
+        example:
+        - '["backend"'
+        - ' "frontend"]'
+        items:
+          type: string
+        type: array
+      container_image:
+        example: vibeman-dev:latest
+        type: string
+      name:
+        example: feature-auth
+        type: string
+      post_scripts:
+        example:
+        - '["npm install"'
+        - ' "npm run build"]'
+        items:
+          type: string
+        type: array
+      repository_id:
+        type: string
+      skip_setup:
+        example: false
+        type: boolean
+    required:
+    - name
+    - repository_id
+    type: object
+  server.ErrorResponse:
+    properties:
+      error:
+        example: Resource not found
+        type: string
+    type: object
+  server.GitConfig:
+    properties:
+      auto_fetch:
+        example: true
+        type: boolean
+      default_branch_prefix:
+        example: feature/
+        type: string
+    type: object
+  server.LogsResponse:
+    properties:
+      id:
+        example: worktree-123
+        type: string
+      lines:
+        example: 50
+        type: integer
+      logs:
+        items:
+          type: string
+        type: array
+      source:
+        example: worktree
+        type: string
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  server.RepositoriesResponse:
+    properties:
+      repositories:
+        items:
+          $ref: '#/definitions/db.Repository'
+        type: array
+      total:
+        example: 10
+        type: integer
+    type: object
+  server.Service:
+    properties:
+      container_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        example: postgres
+        type: string
+      port:
+        example: 5432
+        type: integer
+      status:
+        example: running
+        type: string
+      type:
+        example: database
+        type: string
+    type: object
+  server.ServiceHealthStatus:
+    properties:
+      container_engine:
+        example: healthy
+        type: string
+      database:
+        example: healthy
+        type: string
+      git:
+        example: healthy
+        type: string
+    type: object
+  server.ServicesResponse:
+    properties:
+      services:
+        items:
+          $ref: '#/definitions/server.Service'
+        type: array
+      total:
+        example: 3
+        type: integer
+    type: object
+  server.SuccessResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+    type: object
+  server.SystemStatusResponse:
+    properties:
+      containers:
+        example: 3
+        type: integer
+      repositories:
+        example: 5
+        type: integer
+      services:
+        $ref: '#/definitions/server.ServiceHealthStatus'
+      status:
+        example: healthy
+        type: string
+      uptime:
+        example: 2h30m15s
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+      worktrees:
+        example: 12
+        type: integer
+    type: object
+  server.WorktreeStatusResponse:
+    properties:
+      id:
+        type: string
+      message:
+        example: Worktree started successfully
+        type: string
+      status:
+        example: running
+        type: string
+    type: object
+  server.WorktreesResponse:
+    properties:
+      total:
+        example: 5
+        type: integer
+      worktrees:
+        items:
+          $ref: '#/definitions/db.Worktree'
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /api/ai/attach/{worktree}:
+    get:
+      description: Establish WebSocket connection for terminal access to AI containers
+      parameters:
+      - description: Worktree name
+        in: path
+        name: worktree
+        required: true
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: WebSocket endpoint for AI container terminal
+      tags:
+      - ai
+      - websocket
+  /api/containers:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all containers
+      parameters:
+      - description: Filter by repository
+        in: query
+        name: repository
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ContainersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: List containers
+      tags:
+      - containers
+    post:
+      consumes:
+      - application/json
+      description: Create a new container
+      parameters:
+      - description: Container configuration
+        in: body
+        name: container
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateContainerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.ContainerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Create container
+      tags:
+      - containers
+  /api/containers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a container by ID
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Delete container
+      tags:
+      - containers
+    get:
+      consumes:
+      - application/json
+      description: Get a specific container by its ID
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ContainerResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get container by ID
+      tags:
+      - containers
+  /api/containers/{id}/action:
+    post:
+      consumes:
+      - application/json
+      description: Start, stop, or restart a container
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Action to perform
+        in: body
+        name: action
+        required: true
+        schema:
+          $ref: '#/definitions/server.ContainerActionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Perform action on container
+      tags:
+      - containers
+  /api/containers/{id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get logs from a container
+      parameters:
+      - description: Container ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Follow log output
+        in: query
+        name: follow
+        type: boolean
+      - description: Number of lines to show from end of logs
+        in: query
+        name: tail
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ContainerLogsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get container logs
+      tags:
+      - containers
+  /api/services/{id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get logs from a specific service
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 50
+        description: Number of lines to retrieve
+        in: query
+        name: lines
+        type: integer
+      - description: Follow log output
+        in: query
+        name: follow
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.LogsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get service logs
+      tags:
+      - services
+  /api/status:
+    get:
+      consumes:
+      - application/json
+      description: Get comprehensive system status including service health and resource
+        counts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.SystemStatusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: System status
+      tags:
+      - system
+  /api/worktrees/{id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get logs from a specific worktree
+      parameters:
+      - description: Worktree ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 50
+        description: Number of lines to retrieve
+        in: query
+        name: lines
+        type: integer
+      - description: Follow log output
+        in: query
+        name: follow
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.LogsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Get worktree logs
+      tags:
+      - worktrees
+  /config:
+    get:
+      consumes:
+      - application/json
+      description: Get the global Vibeman configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get global configuration
+      tags:
+      - config
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the API is healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /repositories:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracked repositories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.RepositoriesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: List repositories
+      tags:
+      - repositories
+    post:
+      consumes:
+      - application/json
+      description: Add a repository to the tracked list
+      parameters:
+      - description: Repository details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.AddRepositoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Repository'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Add a repository
+      tags:
+      - repositories
+  /repositories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Stop tracking a repository (doesn't delete files)
+      parameters:
+      - description: Repository ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Remove a repository
+      tags:
+      - repositories
+  /services:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of available services
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.ServicesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: List services
+      tags:
+      - services
+  /services/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a specific service by ID
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Start a service
+      tags:
+      - services
+  /services/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      description: Stop a specific service by ID
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Stop a service
+      tags:
+      - services
+  /worktrees:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of worktrees with optional filters
+      parameters:
+      - description: Filter by repository ID
+        in: query
+        name: repository_id
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.WorktreesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: List worktrees
+      tags:
+      - worktrees
+    post:
+      consumes:
+      - application/json
+      description: Create a new development worktree for a repository
+      parameters:
+      - description: Worktree creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.CreateWorktreeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.Worktree'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Create a new worktree
+      tags:
+      - worktrees
+  /worktrees/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific worktree by its ID
+      parameters:
+      - description: Worktree ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Worktree'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Get worktree by ID
+      tags:
+      - worktrees
+  /worktrees/{id}/start:
+    post:
+      consumes:
+      - application/json
+      description: Start a stopped worktree and its associated container
+      parameters:
+      - description: Worktree ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.WorktreeStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Start a worktree
+      tags:
+      - worktrees
+  /worktrees/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      description: Stop a running worktree and its associated container
+      parameters:
+      - description: Worktree ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.WorktreeStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      security:
+      - Bearer: []
+      summary: Stop a worktree
+      tags:
+      - worktrees
+swagger: "2.0"
